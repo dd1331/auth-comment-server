@@ -1,0 +1,24 @@
+{
+  "development": {
+    "username": "charlie",
+    "password": "1331",
+    "database": "cizion",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "charlie",
+    "password": "1331",
+    "database": "cizion",
+    "host": "127.0.0.1",
+    "dialect": "mysql",
+    "logging": false
+  },
+  "production": {
+    "username": "charlie",
+    "password": "1331",
+    "database": "cizion",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}
