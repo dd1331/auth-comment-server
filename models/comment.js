@@ -7,10 +7,18 @@ module.exports = class Comment extends Sequelize.Model {
 				type: Sequelize.STRING(100),
 				allowNull: false
 			},
+			likeCount: {
+				type: Sequelize.INTEGER,
+				defaultValue: 0
+			},
+			dislikeCount: {
+				type: Sequelize.INTEGER,
+				defaultValue: 0
+			},
 			created_at: {
 				type: Sequelize.DATE,
 				allowNull: true,
-				defaultValue: Sequelize.NOW
+				defaultValue: Sequelize.NOW,
 			}
 		}, {
 			sequelize,
@@ -25,5 +33,7 @@ module.exports = class Comment extends Sequelize.Model {
 
 	static associate(db) {
 		db.Comment.belongsTo(db.User, { foreignKey: 'commenter', targetKey: 'id' });
+		db.Comment.belongsTo(db.Post, { foreignKey: 'postId', targetKey: 'id' });
+		db.Comment.hasMany(db.Like, { foreignKey: 'commentId', targetKey: 'id'})
 	}
 }

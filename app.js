@@ -17,18 +17,19 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 sequelize.sync({ force: true })
-.then(() => {
-  console.log('database connected')
-})
-.catch(err => {
-  console.log(err);
-})
+  .then(() => {
+    console.log('database connected')
+  })
+  .catch(err => {
+    console.log(err);
+  })
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+// 순서 중요
 passportStrategies()
 app.use(passport.initialize());
 
