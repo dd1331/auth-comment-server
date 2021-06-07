@@ -10,6 +10,26 @@ const dayjs = require('dayjs');
 const Op = require('sequelize').Op;
 const bcrypt = require('bcrypt');
 
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     summary: 로그인.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses: 
+ *       '200':
+ *         description: 로그인 성공
+ */
 router.post('/login', (req, res) => {
   passport.authenticate('local', { session: false }, (err, user) => {
     if (err || !user) {
@@ -40,6 +60,26 @@ router.get('/test', passport.authenticate('jwt', { session: false }),
     res.send()
   }
 )
+/**
+ * @swagger
+ *  /login:
+ *    get:
+ *      tags:
+ *      - login
+ *      description: 로그인
+ *      produces:
+ *      - application/json
+ *      parameters:
+ *        - in: query
+ *          name: category
+ *          required: false
+ *          schema:
+ *            type: integer
+ *            description: 카테고리
+ *      responses:
+ *       200:
+ *        description: 제품 조회 성공
+ */
 router.post('/post', passport.authenticate('jwt', { session: false }),
   async (req, res, next) => {
     const { title, content } = req.body
@@ -163,8 +203,7 @@ router.post('/like', passport.authenticate('jwt', { session: false }),
   }
 
 )
-router.get('/comments/:postId/:filter?', passport.authenticate('jwt', { session: false }),
-  async (req, res, next) => {
+router.get('/comments/:postId/:filter?', async (req, res, next) => {
     const { postId, filter } = req.params
     const findOptions = { where: { postId }, order: [['created_at', 'DESC']] }
 
