@@ -10,7 +10,7 @@ describe('test', () => {
 	beforeAll(async () => {
 		await db.sequelize.sync({ force: true })
 			.then((res) => {
-				console.log('database connected')
+				// console.log('database connected')
 			}).catch(err => {
 				console.log('err', err)
 		})
@@ -57,6 +57,15 @@ describe('test', () => {
 		})
 		it('comment filter', async () => {
 			const payload = { comment: 'banned word', postId: createdPost.id }
+			const { body, status } = await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
+			expect(status).toBe(304)
+		})
+		it('filter spam comment', async () => {
+			const payload = { comment: 'ba33 word', postId: createdPost.id }
+			await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
+			await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
+			await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
+			await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
 			const { body, status } = await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
 			expect(status).toBe(304)
 		})

@@ -6,6 +6,8 @@ const User = require('../models/user');
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 const Like = require('../models/like');
+const dayjs = require('dayjs');
+const Op = require('sequelize').Op;
 
 router.post('/login', (req, res) => {
   passport.authenticate('local', { session: false }, (err, user) => {
@@ -19,7 +21,6 @@ router.post('/login', (req, res) => {
       if (err) {
         res.send(err);
       }
-      // const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET);
       const token = jwt.sign(user.toJSON(), 'randomString');
 
       return res.json(((user, token)))
@@ -58,11 +59,29 @@ const filterComment = (comment) => {
   })
   return isValid
 }
+
+const checkSpam = async (commenter, postId) => {
+  const from = dayjs().subtract(5, 'seconds').toDate()
+  const comment = await Comment.findAndCountAll({ 
+    where: {
+      postId,
+      commenter,
+      created_at: {
+        [Op.between]: [from, dayjs().toDate()],
+      } 
+    }
+  })
+
+  return comment.count > 5
+}
 router.post('/comment', passport.authenticate('jwt', { session: false }),
   async (req, res, next) => {
     const { comment, postId } = req.body;
+    const commenter = req.user.dataValues.id
+    const isSpam = await checkSpam(commenter, postId)
     const isValid = filterComment(comment)
-    if (!isValid) {
+
+    if (!isValid || isSpam) {
       res.status(304).send(isValid)
       return
     }
@@ -139,7 +158,6 @@ router.post('/like', passport.authenticate('jwt', { session: false }),
         res.status(204).send(isLike);
       }
     }
-    console.log(like)
     res.status(200).send()
   }
 )
