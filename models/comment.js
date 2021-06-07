@@ -7,11 +7,11 @@ module.exports = class Comment extends Sequelize.Model {
 				type: Sequelize.STRING(100),
 				allowNull: false
 			},
-			likeCount: {
+			like_count: {
 				type: Sequelize.INTEGER,
 				defaultValue: 0
 			},
-			dislikeCount: {
+			dislike_count: {
 				type: Sequelize.INTEGER,
 				defaultValue: 0
 			},

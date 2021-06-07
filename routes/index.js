@@ -9,6 +9,7 @@ const Like = require('../models/like');
 const dayjs = require('dayjs');
 const Op = require('sequelize').Op;
 const bcrypt = require('bcrypt');
+
 router.post('/login', (req, res) => {
   passport.authenticate('local', { session: false }, (err, user) => {
     if (err || !user) {
@@ -53,8 +54,8 @@ router.post('/post', passport.authenticate('jwt', { session: false }),
 )
   
 const filterComment = (comment) => {
-  const bandedWords = ['banned', 'test2']
-  const isValid = bandedWords.every(word => {
+  const bannedWords = ['banned', 'test2', 'random']
+  const isValid = bannedWords.every(word => {
     return !comment.includes(word)
   })
   return isValid
@@ -71,7 +72,6 @@ const checkSpam = async (commenter, postId) => {
       } 
     }
   })
-
   return comment.count > 5
 }
 router.post('/comment', passport.authenticate('jwt', { session: false }),
@@ -85,7 +85,7 @@ router.post('/comment', passport.authenticate('jwt', { session: false }),
       res.status(304).send(isValid)
       return
     }
-    
+
     const payload = { comment, commenter: req.user.id, postId};
     const createdComment = await Comment.create(payload);
     // await createdComment.save()
@@ -96,10 +96,12 @@ router.patch('/comment', passport.authenticate('jwt', { session: false }),
   async (req, res, next) => {
     const { commentId, comment } = req.body
     const isValid = filterComment(comment)
+
     if (!isValid) {
       res.status(304).send(isValid)
       return
     }
+
     const updatedComment = await Comment.update({ comment }, { where: { id:commentId }})
 
     if (updatedComment) {
@@ -123,7 +125,6 @@ router.delete('/comment/:commentId', passport.authenticate('jwt', { session: fal
 router.post('/like', passport.authenticate('jwt', { session: false }),
   async (req, res, next) => {
     const { commentId, isLike } = req.body
-    const user = req.user
     const like = await Like.findOne({ where: { commentId }})
     const target = await Comment.findOne({ where: { id: commentId }})
 
@@ -159,6 +160,19 @@ router.post('/like', passport.authenticate('jwt', { session: false }),
       }
     }
     res.status(200).send()
+  }
+
+)
+router.get('/comments/:postId/:filter?', passport.authenticate('jwt', { session: false }),
+  async (req, res, next) => {
+    const { postId, filter } = req.params
+    const findOptions = { where: { postId }, order: [['created_at', 'DESC']] }
+
+    if (filter === 'oldest') findOptions.order = [['created_at', 'ASC']]
+    if (filter === 'popular') findOptions.order = [['like_count', 'DESC']]
+
+    const comments = await Comment.findAndCountAll(findOptions);
+    res.status(200).send({ comments: comments.rows, count:comments.count })
   }
 )
 

@@ -6,7 +6,7 @@ const each = require('jest-each').default;
 describe('test', () => {
 	let token;
 	let createdPost;
-	let createdComment;
+	let createdComments = [];
 	let createdUser;
 	beforeAll(async () => {
 		await db.sequelize.sync({ force: true })
@@ -64,44 +64,56 @@ describe('test', () => {
 			expect(status).toBe(201)
 		})
 	});
+	function sleep (time) {
+		return new Promise((resolve) => setTimeout(resolve, time));
+	}
 	describe('comment', () => {
-		it('comment', async () => {
-			const payload = { comment: 'testcomment', postId: createdPost.id }
-			await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
-			const { body, status } = await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
-			createdComment = body
-			expect(status).toBe(201)
+		const commentParams = ['test', 'fads', 'd', 'asgas', '312312', 'her']
+		each(commentParams).it('comment', async (comment) => {
+			await sleep(500).then(async () => {
+				const payload = { comment, postId: createdPost.id }
+				const { body, status } = await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
+				createdComments.push(body)
+				expect(status).toBe(201)
+			});
 		})
-		it('comment filter', async () => {
-			const payload = { comment: 'banned word', postId: createdPost.id }
+		const bannedWords = ['banned', 'test2', 'random']
+		each(bannedWords).it('comment filter', async (bannedWord) => {
+			const payload = { comment: `ban${bannedWord}ned word`, postId: createdPost.id }
 			const { body, status } = await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
 			expect(status).toBe(304)
 		})
-		it('filter spam comment', async () => {
-			const payload = { comment: 'ba33 word', postId: createdPost.id }
-			await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
-			await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
-			await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
-			await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
+		each([0,0,0,0,0]).it('filter spam comment', async () => {
+			const payload = { comment: `ba33 word`, postId: createdPost.id }
 			const { body, status } = await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
 			expect(status).toBe(304)
 		})
 		it('update comment', async () => {
-			const payload = { commentId: createdComment.id, comment: 'updatedComment' }
+			const payload = { commentId: createdComments[0].id, comment: 'updatedComment' }
 			const { body, status } = await request(app).patch('/comment').set('Authorization', `Bearer ${token}`).send(payload)
 			expect(status).toBe(204)
 		})
-		it('like comment', async () => {
+		const commentIdsToLike = [1,2,4,4,2,2,3,5,5]
+		each(commentIdsToLike).it('like comment', async (commentId) => {
 			const payload = {
-				commentId: createdComment.id,
-				isLike: false
+				commentId: commentId,
+				isLike: true
 			}
 			const { body, status } = await request(app).post(`/like`).set('Authorization', `Bearer ${token}`)
-				.send(payload);
+			.send(payload);
 			expect(status).toBe(201);
 		})
+		const filterParams = ['latest', 'oldest', 'popular', ''
+	]
+		each(filterParams).it('get comments', async (filter) => {
+			const postId = createdPost.id
+			const { body, status } = await request(app).get(`/comments/${postId}/${filter}`).set('Authorization', `Bearer ${token}`)
+			
+			expect(status).toBe(200);
+			
+		})
 		it('delete comment', async () => {
-			const commentId = createdComment.id
+			const commentId = createdComments[0].id
 			const { body, status } = await request(app).delete(`/comment/${commentId}`).set('Authorization', `Bearer ${token}`)
 			expect(status).toBe(204)
 		})
