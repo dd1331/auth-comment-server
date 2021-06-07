@@ -47,7 +47,38 @@ $ npm run test
 ```
 
 ## API 정보 (Swagger)
-* 서버 실행 후 http://localhost:3000/api/ 접속
+* ~~서버 실행 후 http://localhost:3000/api/ 접속~~  
+
+문제가 있어 대체 합니다 ㅠㅠ
+> **POST** - [http://localhost:3000/signup](http://localhost:3000/signup)  
+**DATA** - id (string), password (string)
+회원가입
+
+> **POST** - [http://localhost:3000/](http://localhost:3000/signup)login  
+**DATA** - id (string), password (string)
+로그인
+
+> **POST** - [http://localhost:3000/](http://localhost:3000/signup)post  
+**DATA** - title (string), content (string)
+게시글 작성
+
+> **POST** - [http://localhost:3000/](http://localhost:3000/signup)comment  
+**DATA** - comment (string), postId (string)
+댓글 작성
+
+> **PATCH** - [http://localhost:3000/](http://localhost:3000/signup)comment  
+**DATA** - commentId (string), comment (string)
+댓글 수정
+
+> **POST** - [http://localhost:3000/](http://localhost:3000/signup)like  
+**DATA** - commentId (string), isLike (boolean)
+좋아요/싫어요
+
+> **GET** - [http://localhost:3000/](http://localhost:3000/signup)comments/{postId}/{filter?}  
+게시글에 달린 댓글 조회, 필터(옵셔널)
+
+> **DELETE** - [http://localhost:3000/](http://localhost:3000/signup)comment/{commentId}  
+댓글 아이디로 댓글 삭제
 
 ## 회고
 
