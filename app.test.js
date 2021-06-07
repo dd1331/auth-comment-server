@@ -55,6 +55,11 @@ describe('test', () => {
 			createdComment = body
 			expect(status).toBe(201)
 		})
+		it('comment filter', async () => {
+			const payload = { comment: 'banned word', postId: createdPost.id }
+			const { body, status } = await request(app).post('/comment').set('Authorization', `Bearer ${token}`).send(payload)
+			expect(status).toBe(304)
+		})
 		it('update comment', async () => {
 			const payload = { commentId: createdComment.id, comment: 'updatedComment' }
 			const { body, status } = await request(app).patch('/comment').set('Authorization', `Bearer ${token}`).send(payload)

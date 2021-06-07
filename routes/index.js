@@ -50,20 +50,37 @@ router.post('/post', passport.authenticate('jwt', { session: false }),
     else res.status(404).send()
   }
 )
-
+  
+const filterComment = (comment) => {
+  const bandedWords = ['banned', 'test2']
+  const isValid = bandedWords.every(word => {
+    return !comment.includes(word)
+  })
+  return isValid
+}
 router.post('/comment', passport.authenticate('jwt', { session: false }),
   async (req, res, next) => {
     const { comment, postId } = req.body;
+    const isValid = filterComment(comment)
+    if (!isValid) {
+      res.status(304).send(isValid)
+      return
+    }
+    
     const payload = { comment, commenter: req.user.id, postId};
-    console.log(payload)
     const createdComment = await Comment.create(payload);
     // await createdComment.save()
     res.status(201).send(createdComment);
   }
-)
+  )
 router.patch('/comment', passport.authenticate('jwt', { session: false }),
   async (req, res, next) => {
     const { commentId, comment } = req.body
+    const isValid = filterComment(comment)
+    if (!isValid) {
+      res.status(304).send(isValid)
+      return
+    }
     const updatedComment = await Comment.update({ comment }, { where: { id:commentId }})
 
     if (updatedComment) {
@@ -118,7 +135,6 @@ router.post('/like', passport.authenticate('jwt', { session: false }),
           await target.update({likeCount: target.likeCount + 1})
         } else {
           await target.update({likeCount: target.dislikeCount + 1})
-          
         }
         res.status(204).send(isLike);
       }
