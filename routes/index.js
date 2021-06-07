@@ -8,7 +8,7 @@ const Comment = require('../models/comment');
 const Like = require('../models/like');
 const dayjs = require('dayjs');
 const Op = require('sequelize').Op;
-
+const bcrypt = require('bcrypt');
 router.post('/login', (req, res) => {
   passport.authenticate('local', { session: false }, (err, user) => {
     if (err || !user) {
@@ -30,7 +30,7 @@ router.post('/login', (req, res) => {
 
 router.post('/signup', async (req, res) => {
   const { id, password } = req.body;
-  const createdUser = await User.create({ user_id: id, password });
+  const createdUser = await User.create({ user_id: id, password: await bcrypt.hash(password, 12) });
   // await createdUser.save()
   res.status(201).send(createdUser);
 });
